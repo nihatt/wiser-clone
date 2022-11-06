@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Image, FlatList, Alert,RefreshControl } from 'react-native';
 import AppHeader from '../components/AppHeader';
 import FabButton from '../components/FabButton';
 import { useFonts } from 'expo-font';
@@ -11,8 +11,16 @@ import {
 } from "react-native-responsive-dimensions";
 import { Avatar } from 'react-native-paper';
 import { IconButton, MD3Colors } from 'react-native-paper';
+import CategoriesCard from './CategoriesCard';
+import { BottomSheet, ListItem } from '@rneui/themed';
+import { Icon } from '@rneui/themed';
+import { Button, Snackbar } from 'react-native-paper';
+
+
+
 export default function PostCard(props) {
     const [fontsLoaded, setFontsLoaded] = React.useState(false)
+
     [fontsLoaded] = useFonts({
         "Comfortaa": require('../assets/fonts/Comfortaa-VariableFont_wght.ttf'),
         "Cormorant-Italic": require('../assets/fonts/Cormorant-Italic-VariableFont_wght.ttf'),
@@ -24,32 +32,113 @@ export default function PostCard(props) {
         "Nunito-Variable": require('../assets/fonts/Nunito-VariableFont_wght.ttf'),
 
     });
+    const [visible, setVisible] = React.useState(false);
+    const [isVisible, setIsVisible] = React.useState(false);
+    const [snackvisible, snacksetVisible] = React.useState(false);
+
+    const onToggleSnackBar = () => snacksetVisible(!snackvisible);
+
+    const onDismissSnackBar = () => snacksetVisible(false);
+
+
+    const setFavorite = async (postId) => {
+        try {
+          let response = await fetch("https://6367183bf5f549f052d04548.mockapi.io/wiser/posts/"+postId, {
+                method: "PUT",
+                body: JSON.stringify({
+                    "isfavorite":true
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            let responseJson = await response.json();
+            if(response.status==200){
+                snacksetVisible(true);
+            }
+            else{
+                Alert.alert("Sanki bir hata oldu da cidden ekleyemedik :(")
+            }
+
+                
+                
+        } catch (error) {
+            Alert.alert(error + "API Error")
+        }
+    }
+
+    const deletePost = async (postId) => {
+        try {
+          let response = await fetch("https://6367183bf5f549f052d04548.mockapi.io/wiser/posts/"+postId, {
+                method: "DELETE",
+
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            let responseJson = await response.json();
+            props.refresh();
+        } catch (error) {
+            Alert.alert(error + "API Error")
+        }
+    }
+    const list = [
+        {
+            title: 'Favorilere Ekle !',
+            onPress: () => { setIsVisible(false), setFavorite(props.id) },
+        },
+        {
+            title: 'Postu Sil',
+            onPress: () => { setIsVisible(false), deletePost(props.id) },
+        },
+        {
+            title: 'İptal',
+            containerStyle: { backgroundColor: 'red' },
+            titleStyle: { color: 'white' },
+            onPress: () => { setIsVisible(false), console.log(props.id) },
+        },
+    ];
+    const renderItem = ({ item }) => (
+        <CategoriesCard categoryname={item}></CategoriesCard>
+    );
+
+    const itemColour = (text) => {
+        if (text == "youtube") {
+            return "red"
+        }
+        else if (text == "spotify") {
+            return "green"
+        }
+        else {
+            return "blue"
+        }
+    }
     return (
         <View style={styles.container}>
-            <View style={{ height: responsiveScreenHeight(55),backgroundColor:'white' }}>
+            <View style={{ height: responsiveScreenHeight(52), backgroundColor: 'white' }}>
                 <View style={{ height: responsiveScreenHeight(7), justifyContent: 'center' }}>
                     <View style={{ flexDirection: 'row', width: responsiveScreenWidth(100), justifyContent: 'space-between' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Avatar.Image size={50} style={{ marginLeft: 5, marginRight: 15 }} source={require('../assets/images/avatar.png')} />
+                            <Avatar.Image size={50} style={{ marginLeft: 5, marginRight: 15 }} source={{ uri: props.avatar }} />
                             <View style={{ flexDirection: 'column', justifyContent: 'center', alignSelf: 'center' }}>
-                                <Text style={{ fontWeight: '700', fontSize: 18 }}>Nihat Pamukçu   <Text style={{ fontSize: 12, color: 'grey' }}>45m</Text></Text>
-                                <Text style={{ fontFamily: 'Comfortaa' }}>React Native Developer</Text>
+                                <Text style={{ fontWeight: '700', fontSize: 18 }}>{props.name}   <Text style={{ fontSize: 12, color: 'grey' }}>45m</Text></Text>
+                                <Text style={{ fontFamily: 'Comfortaa' }}>{props.job}</Text>
                             </View>
                         </View>
                         <IconButton
                             icon="dots-horizontal"
                             iconColor="black"
                             size={32}
-                            onPress={() => console.log('Pressed')}
+                            onPress={() => setIsVisible(true)}
                         />
                     </View>
 
                 </View>
 
 
-                <View style={{ height: responsiveScreenHeight(9), padding: 5 }}>
+                <View style={{ height: responsiveScreenHeight(6), padding: 5 }}>
                     <ScrollView>
-                        <Text>Qui nisi occaecat veniam exercitation non elit et eu Lorem pariatur commodo deserunt sunt consectetur. Qui esse laborum voluptate nisi voluptate elit. Mollit proident occaecat tempor irure pariatur in est duis est dolor anim in aliqua deserunt.</Text>
+                        <Text numberOfLines={2}>{props.description}</Text>
                     </ScrollView>
                 </View>
 
@@ -57,33 +146,62 @@ export default function PostCard(props) {
                 <View style={{ height: responsiveScreenHeight(32), justifyContent: 'center' }}>
                     <View style={{ height: responsiveScreenHeight(30), width: responsiveScreenWidth(95), borderWidth: 1, borderColor: 'rgb(215,218,223)', alignSelf: 'center' }}>
                         <View style={{ flexDirection: 'column' }}>
-                            <View style={{  height: responsiveScreenHeight(18) }}>
-                                <Text>Resim</Text>
+                            <View style={{ height: responsiveScreenHeight(18) }}>
+                                <Image
+                                    resizeMode='cover'
+                                    style={{ flex: 1 }}
+                                    source={{
+                                        uri: props.image,
+                                    }}
+                                />
                             </View>
                             <View style={{ height: responsiveScreenHeight(9), flexDirection: 'column', justifyContent: 'space-around' }}>
-                                <Text style={{ fontFamily: 'Dosis-Variable', fontSize: 16, fontStyle: "italic", color: 'grey' }}>This contend is shared via youtube</Text>
-                                <Text numberOfLines={2} style={{ fontWeight: 'bold', fontSize: 20, flexWrap: 'wrap' }}>Günümüz insan ilişkilerinde sosyal medyanın önemi lorem ipsum dolor sit amet ilişkilerindeilişkilerindeilişkilerindeilişkilerindeilişkilerinde</Text>
+                                <Text style={{ fontFamily: 'Dosis-Variable', fontSize: 16, fontStyle: "italic", color: 'grey' }}>This contend is shared via <Text style={{ color: itemColour(props.sharedvia) }}>{props.sharedvia}</Text></Text>
+                                <Text numberOfLines={2} style={{ fontWeight: 'bold', fontSize: 20, flexWrap: 'wrap' }}>{props.title}</Text>
                             </View>
                         </View>
                     </View>
                 </View>
 
 
-                <View style={{ height: responsiveScreenHeight(6), justifyContent: 'center',paddingLeft:6 }}>
-                    <View style={{ borderColor: 'rgb(243,244,246)', borderWidth: 1, height: responsiveScreenHeight(5), alignSelf: 'flex-start', padding: 10, alignItems: 'center', backgroundColor: "rgb(243,235,255)", borderRadius: 30 }}>
-                        <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>Design</Text>
-                    </View>
+                <View style={{ height: responsiveScreenHeight(6), paddingLeft: 6, flexDirection: 'row' }}>
+                    <FlatList
+                        horizontal={true}
+                        data={props.categorydata}
+                        renderItem={renderItem}
+                        keyExtractor={item => item}
+                    />
                 </View>
             </View>
+            <BottomSheet modalProps={{}} isVisible={isVisible}>
+                {list.map((l, i) => (
+                    <ListItem
+                        key={i}
+                        containerStyle={l.containerStyle}
+                        onPress={l.onPress}
+                    >
+                        <ListItem.Content>
+                            <ListItem.Title style={l.titleStyle}>{l.title}</ListItem.Title>
 
+                        </ListItem.Content>
+                    </ListItem>
+                ))}
+            </BottomSheet>
+            <Snackbar
+                visible={snackvisible}
+                duration={5000}
+                onDismiss={onDismissSnackBar}>
+                Bu post favorilere eklendi, ya da eklenmedi mi?
+            </Snackbar>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+
         backgroundColor: '#fff',
+        marginBottom: 20
 
 
     },

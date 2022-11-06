@@ -2,6 +2,7 @@ import * as React from 'react';
 import { View, Text } from 'react-native';
 import { Appbar } from 'react-native-paper';
 import { useFonts } from 'expo-font';
+import { responsiveScreenHeight } from 'react-native-responsive-dimensions';
 
 
 
@@ -20,9 +21,9 @@ function AppHeader(props) {
 
     });
     return (
-        <View>
-            <Appbar.Header style={{ backgroundColor: 'black',justifyContent:'center',alignItems:'center',alignSelf:'center',alignContent:'center' }}>
-                <Appbar.Content style={{alignItems:'center',alignContent:'center'}} title={<Text style={{ color: 'white', fontFamily: 'Nunito-Variable', fontSize: 25, flex: 1,alignSelf:'center',textAlignVertical:'center' }}>WiseR</Text>} />
+        <View style={{flex:1}}>
+            <Appbar.Header style={{ backgroundColor: 'black'}}>
+                <Appbar.Content style={{alignItems:'center'}} title={<Text style={{ color: 'white', fontFamily: 'Nunito-Variable', fontSize: 25}}>WiseR</Text>} />
             </Appbar.Header>
         </View>
     );

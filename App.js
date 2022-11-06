@@ -1,10 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
+
 import * as React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AnimatedSplash from "react-native-animated-splash-screen";
-import AddPost from './pages/AddPost';
+
 import FeedPage from './pages/FeedPage';
 import FavoritesPage from './pages/FavoritesPage';
 import { useFonts } from 'expo-font';
@@ -64,20 +64,7 @@ export default function App() {
     >
       <NavigationContainer>
         <Tab.Navigator screenOptions={{ headerShown: false }}>
-          <Tab.Screen name="AddPost" options={{
-            tabBarIcon: (tabInfo) => {
-              return (
-                <View style={{ justifyContent: 'flex-end' }}>
-                  <Ionicons
-                    name={!tabInfo.focused ? "chatbox-ellipses-outline" : "chatbox-ellipses"}
-                    size={32}
-                    color={tabInfo.focused ? "black" : "#8e8e93"}
-                  />
-                </View>
-              );
-            },
-            tabBarShowLabel: false
-          }} component={AddPost} />
+
 
 
           <Tab.Screen name="Feed" options={{
